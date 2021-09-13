@@ -9,6 +9,7 @@ import {
 import Home from "./components/Home/Home";
 
 
+
 import "./App.css";
 
 // This site has 3 pages, all of which are rendered
@@ -24,19 +25,7 @@ export default function BasicExample() {
   return (
     <Router>
       <div>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/dashboard">Dashboard</Link>
-          </li>
-        </ul>
 
-        <hr />
 
         {/*
           A <Switch> looks through all its children <Route>
