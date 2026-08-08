@@ -27,6 +27,12 @@ like the python-template sync.
 
 ## Known temporary deviations (pending upstream fixes)
 
+> **Status**: both fixes (plus the sync workflow below and a rendered `docker.yml`
+> smoke-test workflow) are in
+> [python-copier-template#41](https://github.com/Komorebi-AI/python-copier-template/pull/41).
+> Merge order matters: land **this repo's PR first**, then #41 — its first sync run
+> renders `backend/` against this repo's `main`, which must already contain it.
+
 Two bugs were found in the rendered output while building this repo; both are patched
 locally in `backend/` with `TEMPORARY` comments and must be fixed in
 python-copier-template **before** the sync workflow is enabled (a sync would revert the
