@@ -53,6 +53,21 @@ The home page expects two example endpoints — replace them with your real API:
 | `npm run format`       | Format with Prettier                |
 | `npm run format:check` | Check formatting (used in CI)       |
 
+## Docker
+
+A multi-stage `Dockerfile` is included: Node 24 builds the app, and an
+unprivileged nginx serves the static output (non-root, port 8080, SPA fallback,
+immutable caching for hashed assets). Node is not part of the final image.
+
+```bash
+docker build -t my-app .
+docker run --rm -p 8080:8080 my-app
+```
+
+`VITE_API_URL` can be set at build time (`--build-arg VITE_API_URL=...`); by
+default the app calls `/api`, and `docker/nginx.conf` contains a commented
+`location /api/` block to proxy those calls to your backend container.
+
 ## Project structure
 
 ```
