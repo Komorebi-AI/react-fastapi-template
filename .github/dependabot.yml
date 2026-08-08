@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+
+  # Backend Python dependencies are updated via the python-copier-template
+  # sync (uv.lock is regenerated on each render), so uv is not listed here.

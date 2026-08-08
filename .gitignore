@@ -1,0 +1,6 @@
+# Root-level ignores only; frontend/ and backend/ have their own .gitignore.
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.env

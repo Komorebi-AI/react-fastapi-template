@@ -1,0 +1,15 @@
+services:
+  backend:
+    build: ./backend
+    # The backend image runs uvicorn on port 80 (see backend/Dockerfile).
+    # Not published to the host: the frontend's nginx proxies /api to it.
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      # Same nginx config as the image default, plus the /api -> backend proxy.
+      - ./frontend/docker/nginx.compose.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend

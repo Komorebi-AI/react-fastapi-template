@@ -1,0 +1,45 @@
+# Verifies the API contract between frontend and backend by booting the real
+# backend and hitting the endpoints the frontend uses (frontend/src/api/backend.ts).
+# This is what makes automated backend syncs from python-copier-template safe:
+# a template change that breaks the contract turns this check red.
+name: Contract
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/**", "backend/**", ".github/workflows/contract.yml"]
+  pull_request:
+    paths: ["frontend/**", "backend/**", ".github/workflows/contract.yml"]
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          working-directory: backend
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          uv sync
+          uv run uvicorn app.api:app --port 7000 &
+          timeout 30 bash -c 'until curl -sf http://localhost:7000/ > /dev/null; do sleep 1; done'
+
+      - name: "Contract: GET / returns version info"
+        run: |
+          body=$(curl -sf http://localhost:7000/)
+          echo "$body"
+          echo "$body" | jq -e 'to_entries[0].value | test("version")'
+
+      - name: "Contract: POST /predict echoes the input"
+        run: |
+          body=$(curl -sf -X POST http://localhost:7000/predict \
+            -H "Content-Type: application/json" -d '{"input": 5}')
+          echo "$body"
+          echo "$body" | jq -e '.output == 5'
