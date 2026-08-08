@@ -7,12 +7,15 @@ export default defineConfig({
   plugins: [react()],
   server: {
     // Forward API requests to the backend during development so the frontend
-    // can call `/api/...` without CORS configuration. Adjust the target to
-    // wherever your Python backend runs (8000 is the FastAPI/uvicorn default).
+    // can call `/api/...` without CORS configuration. The backend serves its
+    // routes without the /api prefix, so it is stripped here (nginx does the
+    // same in production, see docker/nginx.conf). 7000 matches the dev port
+    // used by backend/app/api.py.
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost:7000',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },

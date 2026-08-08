@@ -1,7 +1,6 @@
-# react-template
+# Frontend
 
-Template for React frontends at Komorebi AI, typically paired with a Python backend
-(FastAPI/Flask). Use it as the starting point for technical tests, experiments and app frontends.
+React frontend of the template. See the repository root README for the full-stack picture.
 
 ## Stack
 
@@ -9,10 +8,8 @@ Template for React frontends at Komorebi AI, typically paired with a Python back
 - [MUI (Material UI)](https://mui.com/) for components and theming (`src/theme.ts`)
 - [React Router](https://reactrouter.com/) for client-side routing
 - [TanStack Query](https://tanstack.com/query/latest) for server state (fetching, caching, mutations)
-- [react-dropzone](https://react-dropzone.js.org/) file-upload example wired to the backend
 - [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) for tests
 - [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/) for linting and formatting
-- GitHub Actions CI (lint, format check, test, build on every PR)
 
 ## Getting started
 
@@ -29,16 +26,17 @@ The app runs at http://localhost:5173.
 
 API calls go through the small wrapper in `src/api/client.ts` and hit `/api/...`:
 
-- **Development**: the Vite dev server proxies `/api` to `http://localhost:8000`
-  (see `vite.config.ts`) — no CORS setup needed. Adjust the target if your backend
-  runs elsewhere.
-- **Production**: serve the built frontend behind a reverse proxy that routes `/api`
-  to the backend, or set `VITE_API_URL` at build time (see `.env.example`).
+- **Development**: the Vite dev server proxies `/api` to the backend at
+  `http://localhost:7000`, stripping the `/api` prefix (see `vite.config.ts`) —
+  no CORS setup needed.
+- **Production**: nginx does the same routing (see `docker/nginx.conf` and the
+  compose variant `docker/nginx.compose.conf`), or set `VITE_API_URL` at build
+  time (see `.env.example`).
 
-The home page expects two example endpoints — replace them with your real API:
+The example endpoints live in `src/api/backend.ts` and match `backend/app/api.py`:
 
-- `GET /api/health` → `{"status": "ok"}` (backend status chip)
-- `POST /api/upload` (multipart form data, field `files`) → `{"message": "..."}`
+- `GET /api/` → `{"app-api": "version ..."}` (status/version chip)
+- `POST /api/predict` `{"input": n}` → `{"output": n}` (mock prediction demo)
 
 ## Scripts
 
@@ -55,25 +53,21 @@ The home page expects two example endpoints — replace them with your real API:
 
 ## Docker
 
-A multi-stage `Dockerfile` is included: Node 24 builds the app, and an
-unprivileged nginx serves the static output (non-root, port 8080, SPA fallback,
-immutable caching for hashed assets). Node is not part of the final image.
+Multi-stage `Dockerfile`: Node 24 builds the app, an unprivileged nginx serves
+it (non-root, port 8080, SPA fallback, immutable caching for hashed assets).
+Usually built via the root `compose.yaml`, but it works standalone:
 
 ```bash
-docker build -t my-app .
-docker run --rm -p 8080:8080 my-app
+docker build -t my-app-frontend .
+docker run --rm -p 8080:8080 my-app-frontend
 ```
-
-`VITE_API_URL` can be set at build time (`--build-arg VITE_API_URL=...`); by
-default the app calls `/api`, and `docker/nginx.conf` contains a commented
-`location /api/` block to proxy those calls to your backend container.
 
 ## Project structure
 
 ```
 src/
-├── api/          # Backend client (fetch wrapper, API types)
-├── components/   # Reusable components (layout, dropzone...)
+├── api/          # Backend client (fetch wrapper + typed endpoint functions)
+├── components/   # Reusable components (layout...)
 ├── pages/        # One component per route, registered in App.tsx
 ├── App.tsx       # Providers (theme, query client) and routes
 ├── theme.ts      # MUI theme customization
@@ -83,7 +77,7 @@ src/
 ## Notes
 
 - `.npmrc` hardens installs against npm supply-chain attacks
-  (`min-release-age` cooldown + `ignore-scripts`). Keep it in projects created
-  from this template.
+  (`min-release-age` cooldown + `ignore-scripts`), mirroring the uv
+  `exclude-newer` setting on the backend.
 - Environment variables must be prefixed with `VITE_` to be visible to client
   code, and they are baked in at build time — never put secrets in them.

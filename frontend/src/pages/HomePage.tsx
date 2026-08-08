@@ -2,43 +2,26 @@ import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
+import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { api } from '../api/client'
-import FileDropzone from '../components/FileDropzone'
-
-interface HealthResponse {
-  status: string
-}
-
-interface UploadResponse {
-  message: string
-}
+import { getApiInfo, predict } from '../api/backend'
 
 // Example page showing the patterns this template is built around:
-// - reading from the backend with useQuery (health check)
-// - writing to the backend with useMutation (file upload)
+// - reading from the backend with useQuery (version/status check)
+// - writing to the backend with useMutation (mock prediction)
 export default function HomePage() {
-  const [files, setFiles] = useState<File[]>([])
+  const [input, setInput] = useState('5')
 
-  const health = useQuery({
-    queryKey: ['health'],
-    queryFn: () => api<HealthResponse>('/health'),
+  const apiInfo = useQuery({
+    queryKey: ['api-info'],
+    queryFn: getApiInfo,
     retry: false,
   })
 
-  const upload = useMutation({
-    mutationFn: (filesToUpload: File[]) => {
-      const formData = new FormData()
-      for (const file of filesToUpload) {
-        formData.append('files', file)
-      }
-      return api<UploadResponse>('/upload', { method: 'POST', body: formData })
-    },
-    onSuccess: () => setFiles([]),
-  })
+  const prediction = useMutation({ mutationFn: predict })
 
   return (
     <Stack spacing={4}>
@@ -47,42 +30,45 @@ export default function HomePage() {
           React Template
         </Typography>
         <Typography variant="body1" color="text.secondary" align="center">
-          A starting point for React frontends backed by a Python API. This page demonstrates
-          querying the backend and uploading files — replace it with your app.
+          A starting point for React frontends backed by a Python API. This page talks to the
+          FastAPI example in <code>backend/</code> — replace it with your app.
         </Typography>
         <Chip
           label={
-            health.isPending
+            apiInfo.isPending
               ? 'Checking backend…'
-              : health.isSuccess
-                ? 'Backend online'
+              : apiInfo.isSuccess
+                ? `Backend online (${apiInfo.data})`
                 : 'Backend offline'
           }
-          color={health.isPending ? 'default' : health.isSuccess ? 'success' : 'error'}
+          color={apiInfo.isPending ? 'default' : apiInfo.isSuccess ? 'success' : 'error'}
           variant="outlined"
         />
       </Stack>
 
-      <FileDropzone
-        files={files}
-        onFilesAccepted={(accepted) => setFiles([...files, ...accepted])}
-      />
-
-      <Stack direction="row" spacing={2} sx={{ justifyContent: 'center' }}>
+      <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', alignItems: 'center' }}>
+        <TextField
+          label="Input"
+          type="number"
+          size="small"
+          value={input}
+          onChange={(event) => setInput(event.target.value)}
+        />
         <Button
           variant="contained"
-          disabled={files.length === 0 || upload.isPending}
-          onClick={() => upload.mutate(files)}
+          disabled={input === '' || prediction.isPending}
+          onClick={() => prediction.mutate(Number(input))}
         >
-          {upload.isPending ? 'Uploading…' : 'Upload'}
-        </Button>
-        <Button variant="outlined" disabled={files.length === 0} onClick={() => setFiles([])}>
-          Clear
+          {prediction.isPending ? 'Predicting…' : 'Predict'}
         </Button>
       </Stack>
 
-      {upload.isSuccess && <Alert severity="success">{upload.data.message}</Alert>}
-      {upload.isError && <Alert severity="error">Upload failed: {upload.error.message}</Alert>}
+      {prediction.isSuccess && (
+        <Alert severity="success">Prediction result: {prediction.data.output}</Alert>
+      )}
+      {prediction.isError && (
+        <Alert severity="error">Prediction failed: {prediction.error.message}</Alert>
+      )}
     </Stack>
   )
 }
