@@ -16,7 +16,7 @@ Template for React frontends at Komorebi AI, typically paired with a Python back
 
 ## Getting started
 
-Requires Node 22 (see `.nvmrc`; `nvm use` picks it up).
+Requires Node 24 LTS (see `.nvmrc`; `nvm use` picks it up). Node ≥ 22 works too.
 
 ```bash
 npm install
