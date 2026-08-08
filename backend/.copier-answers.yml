@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier
+_commit: d788f09
+_src_path: https://github.com/Komorebi-AI/python-copier-template.git
+github_repo: react-template
+include_api: true
+include_cli: false
+include_docker: true
+package_name: app
+project_description: FastAPI backend for react-template
+project_name: React Template Backend
+project_type: application
+python_version: '3.14'
