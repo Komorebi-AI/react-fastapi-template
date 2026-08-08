@@ -11,7 +11,8 @@ Fullstack template: React frontend (`frontend/`) + FastAPI backend (`backend/`).
   whole directory, wiping local changes. Backend changes belong in
   python-copier-template. Exceptions applied by the sync itself: rendered
   `.github/` is dropped, and `[tool.setuptools_scm] root = ".."` is set in
-  `backend/pyproject.toml`. See `docs/backend-sync.md`.
+  `backend/pyproject.toml`. Files marked `TEMPORARY` carry patches for known
+  upstream bugs. See `docs/backend-sync.md`.
 - `frontend/` and everything at the repo root are owned by this repo and
   edited normally.
 

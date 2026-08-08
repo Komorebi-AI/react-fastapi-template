@@ -25,6 +25,22 @@ three post-render adjustments:
 Then `uv lock` (with `SETUPTOOLS_SCM_PRETEND_VERSION`) and `uvx sync-with-uv`, exactly
 like the python-template sync.
 
+## Known temporary deviations (pending upstream fixes)
+
+Two bugs were found in the rendered output while building this repo; both are patched
+locally in `backend/` with `TEMPORARY` comments and must be fixed in
+python-copier-template **before** the sync workflow is enabled (a sync would revert the
+local patches and break this repo):
+
+1. **Dockerfile base images**: the pinned `uv:<ver>-python3.14-bookworm-slim` tag does
+   not exist upstream (Python 3.14 uv images ship on trixie). Patched to
+   `...-trixie-slim` (builder and runtime). Affects python-template as well — its
+   Docker image cannot build.
+2. **PyYAML missing**: uvicorn needs PyYAML to load `log_conf.yaml` via `--log-config`,
+   but it is not in the rendered dependencies — the Docker CMD and the
+   `python app/api.py` dev entrypoint both crash. Patched by adding `pyyaml` to
+   dependencies (plus the deptry DEP002 ignore). Affects python-template as well.
+
 ## Safety
 
 Auto-merge relies on branch protection requiring the **Backend** and **Contract**

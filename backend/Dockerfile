@@ -1,5 +1,9 @@
 # First, build the application in the `/app` directory.
-FROM ghcr.io/astral-sh/uv:0.10.12-python3.14-bookworm-slim AS builder
+# TEMPORARY deviation from the rendered template: the pinned
+# uv:0.10.12-python3.14-*bookworm*-slim tag does not exist upstream (python
+# 3.14 images ship on trixie). Fix pending in python-copier-template; the
+# next backend sync will carry it and this local patch disappears.
+FROM ghcr.io/astral-sh/uv:0.10.12-python3.14-trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
 
 # Disable Python downloads, because we want to use the system interpreter
@@ -22,7 +26,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 
 # Then, use a final image without uv
-FROM python:3.14-slim-bookworm
+# TEMPORARY: trixie to match the builder image above (see note there).
+FROM python:3.14-slim-trixie
 # It is important to use the image that matches the builder, as the path to the
 # Python executable must be the same, e.g., using `python:3.11-slim-bookworm`
 # will fail.
