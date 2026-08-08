@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+# react-template
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Template for React frontends at Komorebi AI, typically paired with a Python backend
+(FastAPI/Flask). Use it as the starting point for technical tests, experiments and app frontends.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+- [Vite](https://vite.dev/) + [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- [MUI (Material UI)](https://mui.com/) for components and theming (`src/theme.ts`)
+- [React Router](https://reactrouter.com/) for client-side routing
+- [TanStack Query](https://tanstack.com/query/latest) for server state (fetching, caching, mutations)
+- [react-dropzone](https://react-dropzone.js.org/) file-upload example wired to the backend
+- [Vitest](https://vitest.dev/) + [Testing Library](https://testing-library.com/) for tests
+- [ESLint](https://eslint.org/) + [Prettier](https://prettier.io/) for linting and formatting
+- GitHub Actions CI (lint, format check, test, build on every PR)
 
-### `yarn start`
+## Getting started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Requires Node 22 (see `.nvmrc`; `nvm use` picks it up).
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+npm install
+npm run dev
+```
 
-### `yarn test`
+The app runs at http://localhost:5173.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Talking to the backend
 
-### `yarn build`
+API calls go through the small wrapper in `src/api/client.ts` and hit `/api/...`:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Development**: the Vite dev server proxies `/api` to `http://localhost:8000`
+  (see `vite.config.ts`) — no CORS setup needed. Adjust the target if your backend
+  runs elsewhere.
+- **Production**: serve the built frontend behind a reverse proxy that routes `/api`
+  to the backend, or set `VITE_API_URL` at build time (see `.env.example`).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The home page expects two example endpoints — replace them with your real API:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- `GET /api/health` → `{"status": "ok"}` (backend status chip)
+- `POST /api/upload` (multipart form data, field `files`) → `{"message": "..."}`
 
-### `yarn eject`
+## Scripts
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+| Command                | Description                         |
+| ---------------------- | ----------------------------------- |
+| `npm run dev`          | Start the dev server with HMR       |
+| `npm run build`        | Type-check and build for production |
+| `npm run preview`      | Serve the production build locally  |
+| `npm test`             | Run tests once                      |
+| `npm run test:watch`   | Run tests in watch mode             |
+| `npm run lint`         | Lint with ESLint                    |
+| `npm run format`       | Format with Prettier                |
+| `npm run format:check` | Check formatting (used in CI)       |
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Project structure
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```
+src/
+├── api/          # Backend client (fetch wrapper, API types)
+├── components/   # Reusable components (layout, dropzone...)
+├── pages/        # One component per route, registered in App.tsx
+├── App.tsx       # Providers (theme, query client) and routes
+├── theme.ts      # MUI theme customization
+└── main.tsx      # Entry point
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Notes
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- `.npmrc` hardens installs against npm supply-chain attacks
+  (`min-release-age` cooldown + `ignore-scripts`). Keep it in projects created
+  from this template.
+- Environment variables must be prefixed with `VITE_` to be visible to client
+  code, and they are baked in at build time — never put secrets in them.
