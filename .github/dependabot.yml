@@ -1,14 +1,30 @@
 version: 2
+# Grouping keeps each ecosystem's updates to a single PR instead of one per
+# package. Note `applies-to`: a group covers version updates unless told
+# otherwise, so security-only ecosystems need it spelled out.
 updates:
+  # Actions keep their routine bumps — advisories for them are rare, so waiting
+  # for one would freeze the versions.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
 
+  # Application dependencies: security updates only. `open-pull-requests-limit: 0`
+  # switches off routine version-bump PRs; security updates ignore that limit and
+  # keep coming.
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      frontend-security:
+        applies-to: security-updates
+        patterns: ["*"]
 
   # The backend package lives in a subdirectory, so it needs its own entry
   # (`uv.lock` there is already picked up by the dependency graph, but an entry
@@ -17,3 +33,8 @@ updates:
     directory: /backend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 0
+    groups:
+      backend-security:
+        applies-to: security-updates
+        patterns: ["*"]
