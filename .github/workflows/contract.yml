@@ -32,10 +32,13 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
-        run: |
-          cd backend && uv sync
-          npm --prefix frontend ci
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
       # Fails if backend/app/api.py changed without running `make generate-types`.
       # Uses git status, not git diff: the latter ignores an untracked or deleted
