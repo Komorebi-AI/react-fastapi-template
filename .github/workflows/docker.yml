@@ -1,28 +1,14 @@
-# Builds both container images and runs the composed stack, checking the same
-# contract as contract.yml but through nginx — catches images that build but
-# cannot start (missing runtime deps, broken CMD, bad base tags) and proxy
-# misconfiguration. Complements the docker.yml that python-copier-template
-# renders into standalone backend repos.
+# Builds both container images and runs the composed stack: catches images that
+# build but cannot start (missing runtime deps, broken CMD, bad base tags), a
+# broken nginx config, and compose wiring. The API contract itself is checked by
+# contract.yml. Complements the docker.yml that python-copier-template renders
+# into standalone backend repos.
 name: Docker
 
 on:
   push:
     branches: [main]
-    paths:
-      [
-        "frontend/**",
-        "backend/**",
-        "compose.yaml",
-        ".github/workflows/docker.yml",
-      ]
   pull_request:
-    paths:
-      [
-        "frontend/**",
-        "backend/**",
-        "compose.yaml",
-        ".github/workflows/docker.yml",
-      ]
 
 jobs:
   docker:
@@ -39,18 +25,14 @@ jobs:
       - name: "Frontend served"
         run: curl -sf http://localhost:8080/ | grep -q "<title>React Template</title>"
 
-      - name: "Contract via nginx: GET /api/ returns version info"
+      # One request is enough to prove the wiring: reaching /health under /api
+      # means the image runs and nginx strips the prefix. The endpoints
+      # themselves are the Contract workflow's job.
+      - name: "Backend reachable through the /api proxy"
         run: |
-          body=$(curl -sf http://localhost:8080/api/)
+          body=$(curl -sf http://localhost:8080/api/health)
           echo "$body"
-          echo "$body" | jq -e 'to_entries[0].value | test("version")'
-
-      - name: "Contract via nginx: POST /api/predict echoes the input"
-        run: |
-          body=$(curl -sf -X POST http://localhost:8080/api/predict \
-            -H "Content-Type: application/json" -d '{"input": 5}')
-          echo "$body"
-          echo "$body" | jq -e '.output == 5'
+          echo "$body" | jq -e '.status == "ok"'
 
       - name: Container logs
         if: always()

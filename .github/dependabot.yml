@@ -10,5 +10,10 @@ updates:
     schedule:
       interval: weekly
 
-  # Backend Python dependencies are updated via the python-copier-template
-  # sync (uv.lock is regenerated on each render), so uv is not listed here.
+  # The backend package lives in a subdirectory, so it needs its own entry
+  # (`uv.lock` there is already picked up by the dependency graph, but an entry
+  # is what turns alerts into pull requests).
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
