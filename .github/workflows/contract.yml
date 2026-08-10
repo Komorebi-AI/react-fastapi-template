@@ -29,7 +29,13 @@ jobs:
         run: |
           uv sync
           uv run uvicorn app.api:app --port 7000 &
-          timeout 30 bash -c 'until curl -sf http://localhost:7000/ > /dev/null; do sleep 1; done'
+          timeout 30 bash -c 'until curl -sf http://localhost:7000/health > /dev/null; do sleep 1; done'
+
+      - name: "Contract: GET /health returns ok"
+        run: |
+          body=$(curl -sf http://localhost:7000/health)
+          echo "$body"
+          echo "$body" | jq -e '.status == "ok"'
 
       - name: "Contract: GET / returns version info"
         run: |
