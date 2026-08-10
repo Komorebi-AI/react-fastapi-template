@@ -1,4 +1,4 @@
-# react-template
+# react-fastapi-template
 
 Fullstack template at Komorebi AI: a **React frontend** (`frontend/`) paired with a
 **FastAPI backend** (`backend/`). Use it as the starting point for technical tests,

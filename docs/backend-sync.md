@@ -19,7 +19,7 @@ three post-render adjustments:
    backend's pyproject is not at the git root, so the version must be derived from this
    repo's metadata. (Cleaner long-term fix: an `scm_root` question in the template.)
 3. **Point `_src_path`** in `.copier-answers.yml` at the template's GitHub URL and keep
-   the file — projects created from react-template use it to run `copier update` on
+   the file — projects created from react-fastapi-template use it to run `copier update` on
    their own backends.
 
 Then `uv lock` (with `SETUPTOOLS_SCM_PRETEND_VERSION`) and `uvx sync-with-uv`, exactly
@@ -56,11 +56,11 @@ red PR instead of a silent break.
 
 ## Workflow for python-copier-template
 
-Ready to drop in as `.github/workflows/sync-react-template.yml` (mirrors the existing
+Ready to drop in as `.github/workflows/sync-react-fastapi-template.yml` (mirrors the existing
 `sync-template.yml`; requires the same `GH_TOKEN` secret):
 
 ```yaml
-name: sync-react-template
+name: sync-react-fastapi-template
 
 on:
   push:
@@ -88,9 +88,9 @@ jobs:
         run: |
           copier copy --defaults --vcs-ref=HEAD \
             --data project_name="React Template Backend" \
-            --data project_description="FastAPI backend for react-template" \
+            --data project_description="FastAPI backend for react-fastapi-template" \
             --data package_name="app" \
-            --data github_repo="react-template" \
+            --data github_repo="react-fastapi-template" \
             --data project_type="application" \
             --data python_version="3.14" \
             --data include_api=true \
@@ -98,10 +98,15 @@ jobs:
             --data include_docker=true \
             . /tmp/rendered
 
+      # backend/ is a subdirectory of react-fastapi-template, not a repo root: its
+      # workflows are owned by react-fastapi-template (rendered ones assume repo root)
+      # and its version must derive from react-fastapi-template's git metadata.
+      # Keep .copier-answers.yml (pointed at this repo's URL) so projects
+      # created from react-fastapi-template can `copier update` their backends.
       - name: Adjust render for subdirectory embedding
         run: |
           rm -rf /tmp/rendered/.github
-          sed -i 's|^\[tool.setuptools_scm\]$|[tool.setuptools_scm]\nroot = ".."|' \
+          sed -i 's|^\[tool.setuptools_scm\]$|[tool.setuptools_scm]\n# Backend lives in a subdirectory of the react-fastapi-template repo; version comes\n# from the repo root git metadata (applied by the template sync job)\nroot = ".."|' \
             /tmp/rendered/pyproject.toml
           sed -i 's|^_src_path:.*|_src_path: https://github.com/Komorebi-AI/python-copier-template.git|' \
             /tmp/rendered/.copier-answers.yml
@@ -116,22 +121,22 @@ jobs:
         run: uvx sync-with-uv
         working-directory: /tmp/rendered
 
-      - name: Checkout react-template
+      - name: Checkout react-fastapi-template
         uses: actions/checkout@v6
         with:
-          repository: Komorebi-AI/react-template
+          repository: Komorebi-AI/react-fastapi-template
           token: ${{ secrets.GH_TOKEN }}
-          path: react-template
+          path: react-fastapi-template
 
       - name: Replace backend/
         run: |
-          rm -rf react-template/backend
-          mkdir react-template/backend
-          cp -r /tmp/rendered/. react-template/backend/
+          rm -rf react-fastapi-template/backend
+          mkdir react-fastapi-template/backend
+          cp -r /tmp/rendered/. react-fastapi-template/backend/
 
       - name: Check for changes
         id: changes
-        working-directory: react-template
+        working-directory: react-fastapi-template
         run: |
           git add -A
           if git diff --cached --quiet; then
@@ -142,7 +147,7 @@ jobs:
 
       - name: Create pull request
         if: steps.changes.outputs.has_changes == 'true'
-        working-directory: react-template
+        working-directory: react-fastapi-template
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
@@ -158,10 +163,10 @@ jobs:
           if ! gh pr list --head "$BRANCH" --json number --jq '.[0].number' | grep -q .; then
             gh pr create \
               --title "sync: update backend/ from python-copier-template" \
-              --body "Automated sync of backend/ from python-copier-template."
+              --body "Automated sync of backend/ from [python-copier-template](https://github.com/Komorebi-AI/python-copier-template)."
           fi
 
-          # Requires react-template branch protection with the Backend and
+          # Requires react-fastapi-template branch protection with the Backend and
           # Contract checks required, and "Allow auto-merge" enabled.
           gh pr merge "$BRANCH" --auto --squash
 ```
