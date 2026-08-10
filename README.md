@@ -1,70 +1,82 @@
-# Getting Started with Create React App
+# react-template
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Fullstack template at Komorebi AI: a **React frontend** (`frontend/`) paired with a
+**FastAPI backend** (`backend/`). Use it as the starting point for technical tests,
+experiments and app frontends — delete `backend/` if you only need the frontend.
 
-## Available Scripts
+## Structure
 
-In the project directory, you can run:
+```
+frontend/   React + TypeScript + Vite + MUI + TanStack Query   → frontend/README.md
+backend/    FastAPI example, rendered from python-copier-template (do not edit here!)
+compose.yaml, Makefile, .github/                                → repo-owned glue
+```
 
-### `yarn start`
+**Ownership model**: `backend/` is a rendered mirror of
+[python-copier-template](https://github.com/Komorebi-AI/python-copier-template) and is
+replaced wholesale by an automated sync — backend changes belong in that template, not
+here. See [docs/backend-sync.md](docs/backend-sync.md). Everything else is owned and
+edited in this repo.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Quickstart
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Requirements: [Node 24](https://nodejs.org/) (see `frontend/.nvmrc`) and
+[uv](https://docs.astral.sh/uv/).
 
-### `yarn test`
+```bash
+make install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Local development, in two terminals:
 
-### `yarn build`
+```bash
+make dev-backend    # FastAPI with reload at http://localhost:7000
+make dev-frontend   # Vite with HMR at http://localhost:5173
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The Vite dev server proxies `/api/*` to the backend (stripping the prefix), so no CORS
+configuration is needed. The example page shows the backend version and a mock
+prediction round-trip.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Full stack in containers:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+make up             # docker compose up --build → http://localhost:8080
+```
 
-### `yarn eject`
+nginx serves the built frontend and proxies `/api` to the backend container.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Checks
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+make test           # frontend Vitest + backend pytest
+make lint           # ESLint/Prettier + ruff/ty
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+CI runs three path-filtered workflows: **Frontend** (lint, format, test, build),
+**Backend** (ruff, ty, pytest) and **Contract** — the latter boots the real backend and
+exercises the endpoints the frontend uses, so a backend sync that breaks the API
+contract fails visibly.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## API contract
 
-## Learn More
+The frontend's typed endpoint wrappers (`frontend/src/api/backend.ts`) match
+`backend/app/api.py`:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+| Endpoint            | Response                         | Used for             |
+| ------------------- | -------------------------------- | -------------------- |
+| `GET /api/`         | `{"app-api": "version ..."}`     | status/version chip  |
+| `POST /api/predict` | `{"input": n}` → `{"output": n}` | mock prediction demo |
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Both proxies (Vite in dev, nginx in prod) strip the `/api` prefix before forwarding to
+the backend.
 
-### Code Splitting
+## Starting a project from this template
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Use GitHub's **"Use this template"** (or clone and re-init git).
+2. Rename things: `frontend/package.json` name, `backend` answers if you re-render.
+3. Replace the example page and endpoints with your app. Keep the patterns:
+   typed API wrappers, useQuery/useMutation, the `/api` prefix convention.
+4. The backend keeps its link to python-copier-template via
+   `backend/.copier-answers.yml` — run `copier update` inside `backend/` to pull
+   future template improvements into your (by then customized) backend.

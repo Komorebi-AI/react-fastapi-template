@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Test coverage
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor directories and files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+# Environment variables (keep .env.example in git)
+.env
+.env.local
+.env.*.local
+
+# TypeScript / tooling caches
+*.tsbuildinfo
+.eslintcache

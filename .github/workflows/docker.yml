@@ -1,0 +1,61 @@
+# Builds both container images and runs the composed stack, checking the same
+# contract as contract.yml but through nginx — catches images that build but
+# cannot start (missing runtime deps, broken CMD, bad base tags) and proxy
+# misconfiguration. Complements the docker.yml that python-copier-template
+# renders into standalone backend repos.
+name: Docker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      [
+        "frontend/**",
+        "backend/**",
+        "compose.yaml",
+        ".github/workflows/docker.yml",
+      ]
+  pull_request:
+    paths:
+      [
+        "frontend/**",
+        "backend/**",
+        "compose.yaml",
+        ".github/workflows/docker.yml",
+      ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build and start the stack
+        run: docker compose up -d --build
+
+      - name: Wait for the stack (nginx up and backend responding through it)
+        run: timeout 60 bash -c 'until curl -sf http://localhost:8080/api/ > /dev/null; do sleep 2; done'
+
+      - name: "Frontend served"
+        run: curl -sf http://localhost:8080/ | grep -q "<title>React Template</title>"
+
+      - name: "Contract via nginx: GET /api/ returns version info"
+        run: |
+          body=$(curl -sf http://localhost:8080/api/)
+          echo "$body"
+          echo "$body" | jq -e 'to_entries[0].value | test("version")'
+
+      - name: "Contract via nginx: POST /api/predict echoes the input"
+        run: |
+          body=$(curl -sf -X POST http://localhost:8080/api/predict \
+            -H "Content-Type: application/json" -d '{"input": 5}')
+          echo "$body"
+          echo "$body" | jq -e '.output == 5'
+
+      - name: Container logs
+        if: always()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down

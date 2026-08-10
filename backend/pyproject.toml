@@ -1,0 +1,133 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+requires-python = ">=3.14,<3.15"
+name = "app"
+# La versión se obtiene automáticamente de git con `setuptools_scm`
+#version = "0.1.0"
+description = "FastAPI backend for react-template"
+readme = "README.md"
+authors = [{ name = "Komorebi AI", email = "info@komorebi.ai" }]
+dynamic = ["version"]
+dependencies = [
+    "fastapi",
+    "pydantic",
+    "uvicorn",
+    "colorlog>=6.9.0",
+    # TEMPORARY deviation from the rendered template: uvicorn needs PyYAML to
+    # load log_conf.yaml (--log-config). Fix pending in python-copier-template.
+    "pyyaml",
+]
+
+[project.urls]
+homepage = "https://github.com/Komorebi-AI/react-template"
+
+
+
+[tool.setuptools]
+packages = ["app"]
+
+[tool.setuptools_scm]
+# Backend lives in a subdirectory of the react-template repo; version comes
+# from the repo root git metadata (applied by the template sync job)
+root = ".."
+# Importante crear esta sección vacia para activar el plugin
+
+[tool.uv]
+required-version = ">=0.9.17"
+# Exclude packages published in the last 7 days to mitigate supply chain attacks
+exclude-newer = "7 days"
+
+[tool.ruff]
+line-length = 88
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # Pyflakes
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I", # isort
+    "D", # pydocstyle
+    "C401",  # flake8-comprehensions: unnecessary-generator-set
+    "C402",  # flake8-comprehensions: unnecessary-generator-dict
+    "C403",  # flake8-comprehensions: unnecessary-list-comprehension-set
+    "C404",  # flake8-comprehensions: unnecessary-list-comprehension-dict
+    "C405",  # flake8-comprehensions: unnecessary-literal-set
+    "W605",  # pycodestyle: invalid-escape-sequence
+    "S",  # flake8-bandit (security)
+    "RUF",  # ruff-specific rules
+    "PT",  # flake8-pytest-style
+    "A",  # flake8-builtins (no builtin shadowing)
+    "PERF",  # perflint (performance anti-patterns)
+    "N",  # pep8-naming
+    "RET501",  # flake8-return: unnecessary-return-none
+    "RET502",  # flake8-return: implicit-return-value
+    "RET503",  # flake8-return: implicit-return
+    "RET504",  # flake8-return: unnecessary-assign
+    "PIE",  # flake8-pie
+    "LOG",  # flake8-logging
+    "NPY",  # numpy-specific rules
+    "PD",  # pandas-vet
+    "ISC001",  # flake8-implicit-str-concat: single-line implicit string concatenation
+    "TRY",  # tryceratops (exception handling best practices)
+    "PLE",  # pylint errors
+    "PLW",  # pylint warnings
+    "PLC",  # pylint convention
+    "FAST",  # fastapi
+]
+
+ignore = [
+    "B028",    # no-explicit-stacklevel
+    "D100",    # undocumented-public-module
+    "LOG015",  # root-logger-call (fine for scripts/apps)
+    "N803",    # invalid-argument-name
+    "N806",    # non-lowercase-variable-in-function
+    "PD010",   # pandas-use-of-dot-pivot-or-unstack
+    "PERF401", # manual-list-comprehension
+    "PLC0415", # import-outside-top-level
+    "RET504",  # unnecessary-assign
+    "RUF001",  # ambiguous-unicode-character-string
+    "RUF005",  # collection-literal-concatenation
+    "S603",    # subprocess-without-shell-equals-true
+    "S607",    # start-process-with-partial-path
+    "SIM118",  # in-dict-keys
+    "TRY003",  # raise-vanilla-args
+    "TRY300",  # try-consider-else
+    "TRY400",  # error-instead-of-exception
+]
+[tool.ruff.lint.per-file-ignores]
+# Also ignore `D104` in all `__init__.py` files.
+"__init__.py" = ["D104"]
+"tests/*.py" = ["D", "S101"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.pytest.ini_options]
+minversion = "7"
+testpaths = ["tests"]
+log_cli_level = "INFO"
+xfail_strict = true
+addopts = ["-ra", "--strict-config", "--strict-markers"]
+filterwarnings = ["error", "ignore::DeprecationWarning"]
+
+[tool.deptry]
+# colorlog is used in log_conf.yaml (not scanned by deptry); pyyaml is used
+# by uvicorn to load log_conf.yaml (TEMPORARY, see dependencies above)
+per_rule_ignores = {"DEP002" = ["colorlog", "pyyaml"]}
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "prek",
+    "ipykernel",
+    "ty",
+    "deptry>=0.25",
+]
