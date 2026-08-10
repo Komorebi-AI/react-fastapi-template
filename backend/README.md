@@ -2,10 +2,10 @@
 
 # React Template Backend
 
-![testing workflow](https://github.com/Komorebi-AI/react-template/actions/workflows/pytest.yml/badge.svg)
+![testing workflow](https://github.com/Komorebi-AI/react-fastapi-template/actions/workflows/pytest.yml/badge.svg)
 [![prek](https://img.shields.io/badge/prek-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/j178/prek)
 
-FastAPI backend for react-template
+FastAPI backend for react-fastapi-template
 
 ## Structure
 
