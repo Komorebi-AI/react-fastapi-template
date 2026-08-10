@@ -1,4 +1,4 @@
-# react-template
+# react-fastapi-template
 
 Fullstack template at Komorebi AI: a **React frontend** (`frontend/`) paired with a
 **FastAPI backend** (`backend/`). Use it as the starting point for technical tests,
@@ -63,13 +63,15 @@ contract fails visibly.
 The frontend's typed endpoint wrappers (`frontend/src/api/backend.ts`) match
 `backend/app/api.py`:
 
-| Endpoint            | Response                         | Used for             |
-| ------------------- | -------------------------------- | -------------------- |
-| `GET /api/`         | `{"app-api": "version ..."}`     | status/version chip  |
-| `POST /api/predict` | `{"input": n}` → `{"output": n}` | mock prediction demo |
+| Endpoint            | Response                         | Used for                   |
+| ------------------- | -------------------------------- | -------------------------- |
+| `GET /api/`         | `{"app-api": "version ..."}`     | status/version chip        |
+| `POST /api/predict` | `{"input": n}` → `{"output": n}` | mock prediction demo       |
+| `GET /api/health`   | `{"status": "ok"}`               | container healthchecks, CI |
 
 Both proxies (Vite in dev, nginx in prod) strip the `/api` prefix before forwarding to
-the backend.
+the backend. `/health` is the stable endpoint — keep it when replacing the example
+endpoints, since the compose healthcheck and CI smoke tests rely on it.
 
 ## Starting a project from this template
 
