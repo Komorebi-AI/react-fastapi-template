@@ -6,7 +6,7 @@ Fullstack template: React frontend (`frontend/`) + FastAPI backend (`backend/`).
 
 - `backend/` is a **rendered mirror** of
   [python-copier-template](https://github.com/Komorebi-AI/python-copier-template)
-  (answers in `backend/.copier-answers.yml`). Do NOT edit files under
+  (render recipe in `docs/backend-sync.md`). Do NOT edit files under
   `backend/` in this repo: a sync job re-renders the template and replaces the
   whole directory, wiping local changes. Backend changes belong in
   python-copier-template. Exceptions applied by the sync itself: rendered

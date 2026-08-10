@@ -9,8 +9,8 @@ edited in this repo.
 
 ## Deterministic render recipe
 
-The sync renders with the answers recorded in `backend/.copier-answers.yml` and applies
-three post-render adjustments:
+The sync renders with the answers hardcoded in the workflow (mirrored in the render
+recipe below) and applies three post-render adjustments:
 
 1. **Drop the rendered `.github/`** — workflows are repo-owned here
    (`.github/workflows/backend.yml` + `contract.yml`), because the rendered ones assume
@@ -18,20 +18,22 @@ three post-render adjustments:
 2. **Set `[tool.setuptools_scm] root = ".."`** in `backend/pyproject.toml` — the
    backend's pyproject is not at the git root, so the version must be derived from this
    repo's metadata. (Cleaner long-term fix: an `scm_root` question in the template.)
-3. **Point `_src_path`** in `.copier-answers.yml` at the template's GitHub URL and keep
-   the file — projects created from react-fastapi-template use it to run `copier update` on
-   their own backends.
+3. **Drop `.copier-answers.yml`**, same as the python-template sync. Nothing reads it:
+   the sync renders from hardcoded answers, and this repo is consumed via GitHub's "Use
+   this template" — which copies files without any copier relationship, so there is
+   nothing for `copier update` to update. (Running it against the embedded
+   subdirectory is unsupported anyway.) To re-render deliberately, use the recipe below.
 
 Then `uv lock` (with `SETUPTOOLS_SCM_PRETEND_VERSION`) and `uvx sync-with-uv`, exactly
 like the python-template sync.
 
 ## Known temporary deviations (pending upstream fixes)
 
-> **Status**: both fixes (plus the sync workflow below and a rendered `docker.yml`
-> smoke-test workflow) are in
-> [python-copier-template#41](https://github.com/Komorebi-AI/python-copier-template/pull/41).
-> Merge order matters: land **this repo's PR first**, then #41 — its first sync run
-> renders `backend/` against this repo's `main`, which must already contain it.
+> **Status**: both fixes — plus the `/health` endpoint, the sync workflow below and a
+> rendered `docker.yml` smoke-test workflow — are in
+> [python-copier-template#41](https://github.com/Komorebi-AI/python-copier-template/pull/41),
+> pending merge. Its first sync run normalizes the patches below away; nothing else in
+> `backend/` changes (verified by diffing the render against this repo).
 
 Two bugs were found in the rendered output while building this repo; both are patched
 locally in `backend/` with `TEMPORARY` comments and must be fixed in
@@ -49,10 +51,11 @@ local patches and break this repo):
 
 ## Safety
 
-Auto-merge relies on branch protection requiring the **Backend** and **Contract**
-checks. The Contract workflow boots the rendered backend and exercises the endpoints
-the frontend depends on, so a template change that breaks the API contract produces a
-red PR instead of a silent break.
+Auto-merge relies on branch protection requiring the **Backend**, **Contract** and
+**Docker** checks. Contract boots the rendered backend and exercises the endpoints the
+frontend depends on; Docker builds both images and checks the same contract through
+nginx. So a template change that breaks the API contract — or produces an image that
+builds but cannot start — produces a red PR instead of a silent break.
 
 ## Workflow for python-copier-template
 
@@ -99,17 +102,17 @@ jobs:
             . /tmp/rendered
 
       # backend/ is a subdirectory of react-fastapi-template, not a repo root: its
-      # workflows are owned by react-fastapi-template (rendered ones assume repo root)
-      # and its version must derive from react-fastapi-template's git metadata.
-      # Keep .copier-answers.yml (pointed at this repo's URL) so projects
-      # created from react-fastapi-template can `copier update` their backends.
+      # workflows are owned by react-fastapi-template (rendered ones assume repo
+      # root) and its version must derive from that repo's git metadata.
+      # .copier-answers.yml is dropped like in the python-template sync: this job
+      # renders from hardcoded answers, and projects created from the template
+      # (via "Use this template") have no copier relationship to update.
       - name: Adjust render for subdirectory embedding
         run: |
           rm -rf /tmp/rendered/.github
+          rm -f /tmp/rendered/.copier-answers.yml
           sed -i 's|^\[tool.setuptools_scm\]$|[tool.setuptools_scm]\n# Backend lives in a subdirectory of the react-fastapi-template repo; version comes\n# from the repo root git metadata (applied by the template sync job)\nroot = ".."|' \
             /tmp/rendered/pyproject.toml
-          sed -i 's|^_src_path:.*|_src_path: https://github.com/Komorebi-AI/python-copier-template.git|' \
-            /tmp/rendered/.copier-answers.yml
 
       - name: Generate lock file
         run: uv lock

@@ -76,9 +76,13 @@ endpoints, since the compose healthcheck and CI smoke tests rely on it.
 ## Starting a project from this template
 
 1. Use GitHub's **"Use this template"** (or clone and re-init git).
-2. Rename things: `frontend/package.json` name, `backend` answers if you re-render.
+2. Rename things: `frontend/package.json` name, `backend/Makefile` image name.
 3. Replace the example page and endpoints with your app. Keep the patterns:
-   typed API wrappers, useQuery/useMutation, the `/api` prefix convention.
-4. The backend keeps its link to python-copier-template via
-   `backend/.copier-answers.yml` — run `copier update` inside `backend/` to pull
-   future template improvements into your (by then customized) backend.
+   typed API wrappers, useQuery/useMutation, the `/api` prefix convention, and the
+   `/health` endpoint the compose healthcheck and CI rely on.
+
+Your project is a plain copy from that point on — `backend/` is only a bot-owned mirror
+in _this_ repo, so you own and edit it freely like any other file. To start a
+**standalone** Python service instead, render
+[python-copier-template](https://github.com/Komorebi-AI/python-copier-template)
+directly; those projects keep a live copier link and can `copier update`.
