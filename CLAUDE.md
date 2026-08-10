@@ -5,14 +5,16 @@ Fullstack template: React frontend (`frontend/`) + FastAPI backend (`backend/`).
 ## Ownership model — IMPORTANT
 
 - `backend/` is a **rendered mirror** of
-  [python-copier-template](https://github.com/Komorebi-AI/python-copier-template)
-  (render recipe in `docs/backend-sync.md`). Do NOT edit files under
-  `backend/` in this repo: a sync job re-renders the template and replaces the
-  whole directory, wiping local changes. Backend changes belong in
-  python-copier-template. Exceptions applied by the sync itself: rendered
-  `.github/` is dropped, and `[tool.setuptools_scm] root = ".."` is set in
-  `backend/pyproject.toml`. Files marked `TEMPORARY` carry patches for known
-  upstream bugs. See `docs/backend-sync.md`.
+  [python-copier-template](https://github.com/Komorebi-AI/python-copier-template).
+  Do NOT edit files under `backend/` in this repo: a sync job there re-renders
+  the template and replaces the whole directory, wiping local changes. Backend
+  changes belong in python-copier-template, which documents the sync (it drops
+  the rendered `.github/`, since workflows are repo-owned here, and sets
+  `[tool.setuptools_scm] root = ".."` because the pyproject is not at the git
+  root). Files marked `TEMPORARY` carry patches for known upstream bugs.
+- Note for projects created from this template: the rule above applies to the
+  template repo only. Your `backend/` is a plain copy you own — delete this
+  section.
 - `frontend/` and everything at the repo root are owned by this repo and
   edited normally.
 

@@ -82,5 +82,5 @@ endpoints, since the compose healthcheck and CI smoke tests rely on it.
 
 ---
 
-Maintaining this template itself: `backend/` is kept up to date automatically — read
-[docs/backend-sync.md](docs/backend-sync.md) before editing anything under it.
+Maintaining this template itself: `backend/` is regenerated automatically, so changes
+under it are overwritten — see `CLAUDE.md` before editing anything there.

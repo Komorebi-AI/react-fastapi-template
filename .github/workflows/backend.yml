@@ -1,6 +1,6 @@
-# Checks for backend/, which is rendered from python-copier-template
-# (see docs/backend-sync.md). Kept as a thin repo-owned workflow because the
-# rendered workflows assume the project sits at the repository root.
+# Checks for backend/, which is rendered from python-copier-template (see
+# CLAUDE.md). Kept as a thin repo-owned workflow because the rendered workflows
+# assume the project sits at the repository root.
 name: Backend
 
 on:
