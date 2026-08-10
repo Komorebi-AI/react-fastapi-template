@@ -1,5 +1,9 @@
-# Verifies the API contract between frontend and backend by booting the real
-# backend and hitting the endpoints the frontend uses (frontend/src/api/backend.ts).
+# Verifies the contract between frontend and backend, two ways:
+#   1. structurally — the committed API types (frontend/src/api/schema.d.ts)
+#      must match the OpenAPI schema FastAPI generates today, so any change to
+#      an endpoint, parameter or response model shows up here;
+#   2. behaviourally — the real backend answers the endpoints the frontend calls
+#      (frontend/src/api/backend.ts).
 # This is what makes automated backend syncs from python-copier-template safe:
 # a template change that breaks the contract turns this check red.
 name: Contract
@@ -22,10 +26,35 @@ jobs:
         with:
           working-directory: backend
 
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: uv sync
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # Fails if backend/app/api.py changed without running `make generate-types`.
+      # Uses git status, not git diff: the latter ignores an untracked or deleted
+      # file and would pass vacuously.
+      - name: API types match the backend schema
+        run: |
+          make generate-types
+          if [ -n "$(git status --porcelain -- frontend/src/api/schema.d.ts)" ]; then
+            echo "::error::frontend/src/api/schema.d.ts is stale or missing — run 'make generate-types' and commit the result"
+            git diff -- frontend/src/api/schema.d.ts
+            exit 1
+          fi
+
       - name: Start backend
         working-directory: backend
         run: |
-          uv sync
           uv run uvicorn app.api:app --port 7000 &
           timeout 30 bash -c 'until curl -sf http://localhost:7000/health > /dev/null; do sleep 1; done'
 

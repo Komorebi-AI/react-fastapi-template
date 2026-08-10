@@ -26,3 +26,6 @@ npm-debug.log*
 # TypeScript / tooling caches
 *.tsbuildinfo
 .eslintcache
+
+# Generated on demand by `make generate-types`
+openapi.json
