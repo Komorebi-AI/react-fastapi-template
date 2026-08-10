@@ -83,4 +83,4 @@ endpoints, since the compose healthcheck and CI smoke tests rely on it.
 ---
 
 Maintaining this template itself: `backend/` is regenerated automatically, so changes
-under it are overwritten — see `CLAUDE.md` before editing anything there.
+under it are overwritten — make them in our Python template instead.
