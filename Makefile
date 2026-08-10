@@ -1,4 +1,4 @@
-.PHONY: install dev-frontend dev-backend test lint build up down
+.PHONY: install dev-frontend dev-backend test lint generate-types build up down
 
 # Convenience targets delegating to the two projects. See frontend/README.md
 # and backend/README.md for the full command reference of each side.
@@ -22,6 +22,13 @@ lint:
 	npm --prefix frontend run lint
 	npm --prefix frontend run format:check
 	cd backend && uv run ruff check . && uv run ruff format --check . && uv run ty check app tests
+
+# Regenerate the frontend's API types from the backend's OpenAPI schema.
+# Run this after changing backend/app/api.py; CI fails if the committed types
+# are stale (see .github/workflows/contract.yml).
+generate-types:
+	cd backend && uv run python -c "import json; from app.api import app; print(json.dumps(app.openapi()))" > ../frontend/openapi.json
+	npm --prefix frontend run generate-types
 
 build:
 	npm --prefix frontend run build
