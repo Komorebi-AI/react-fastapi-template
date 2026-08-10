@@ -2,21 +2,19 @@
 
 Fullstack template at Komorebi AI: a **React frontend** (`frontend/`) paired with a
 **FastAPI backend** (`backend/`). Use it as the starting point for technical tests,
-experiments and app frontends — delete `backend/` if you only need the frontend.
+experiments and apps.
+
+Need only one half? Delete `frontend/` or `backend/` — or start from
+[python-template](https://github.com/Komorebi-AI/python-template) for a backend-only
+project.
 
 ## Structure
 
 ```
 frontend/   React + TypeScript + Vite + MUI + TanStack Query   → frontend/README.md
-backend/    FastAPI example, rendered from python-copier-template (do not edit here!)
-compose.yaml, Makefile, .github/                                → repo-owned glue
+backend/    FastAPI + uv, ruff, ty, pytest                     → backend/README.md
+compose.yaml, Makefile, .github/                                  full-stack glue
 ```
-
-**Ownership model**: `backend/` is a rendered mirror of
-[python-copier-template](https://github.com/Komorebi-AI/python-copier-template) and is
-replaced wholesale by an automated sync — backend changes belong in that template, not
-here. See [docs/backend-sync.md](docs/backend-sync.md). Everything else is owned and
-edited in this repo.
 
 ## Quickstart
 
@@ -53,10 +51,10 @@ make test           # frontend Vitest + backend pytest
 make lint           # ESLint/Prettier + ruff/ty
 ```
 
-CI runs three path-filtered workflows: **Frontend** (lint, format, test, build),
-**Backend** (ruff, ty, pytest) and **Contract** — the latter boots the real backend and
-exercises the endpoints the frontend uses, so a backend sync that breaks the API
-contract fails visibly.
+CI runs path-filtered workflows: **Frontend** (lint, format, test, build), **Backend**
+(ruff, ty, pytest), **Contract** — boots the real backend and exercises the endpoints
+the frontend calls, so frontend/backend drift fails visibly — and **Docker** (builds
+both images and checks the same contract through nginx).
 
 ## API contract
 
@@ -76,9 +74,13 @@ endpoints, since the compose healthcheck and CI smoke tests rely on it.
 ## Starting a project from this template
 
 1. Use GitHub's **"Use this template"** (or clone and re-init git).
-2. Rename things: `frontend/package.json` name, `backend` answers if you re-render.
+2. Rename things: `frontend/package.json` name, `backend/Makefile` image name,
+   `backend/pyproject.toml` name and description.
 3. Replace the example page and endpoints with your app. Keep the patterns:
-   typed API wrappers, useQuery/useMutation, the `/api` prefix convention.
-4. The backend keeps its link to python-copier-template via
-   `backend/.copier-answers.yml` — run `copier update` inside `backend/` to pull
-   future template improvements into your (by then customized) backend.
+   typed API wrappers, useQuery/useMutation, the `/api` prefix convention, and the
+   `/health` endpoint the compose healthcheck and CI rely on.
+
+---
+
+Maintaining this template itself: `backend/` is regenerated automatically, so changes
+under it are overwritten — make them in our Python template instead.
