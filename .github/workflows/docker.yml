@@ -8,21 +8,7 @@ name: Docker
 on:
   push:
     branches: [main]
-    paths:
-      [
-        "frontend/**",
-        "backend/**",
-        "compose.yaml",
-        ".github/workflows/docker.yml",
-      ]
   pull_request:
-    paths:
-      [
-        "frontend/**",
-        "backend/**",
-        "compose.yaml",
-        ".github/workflows/docker.yml",
-      ]
 
 jobs:
   docker:
