@@ -7,7 +7,7 @@ requires-python = ">=3.14,<3.15"
 name = "app"
 # La versión se obtiene automáticamente de git con `setuptools_scm`
 #version = "0.1.0"
-description = "FastAPI backend for react-template"
+description = "FastAPI backend for react-fastapi-template"
 readme = "README.md"
 authors = [{ name = "Komorebi AI", email = "info@komorebi.ai" }]
 dynamic = ["version"]
@@ -16,13 +16,12 @@ dependencies = [
     "pydantic",
     "uvicorn",
     "colorlog>=6.9.0",
-    # TEMPORARY deviation from the rendered template: uvicorn needs PyYAML to
-    # load log_conf.yaml (--log-config). Fix pending in python-copier-template.
+    # uvicorn needs pyyaml to load the YAML log config (log_conf.yaml)
     "pyyaml",
 ]
 
 [project.urls]
-homepage = "https://github.com/Komorebi-AI/react-template"
+homepage = "https://github.com/Komorebi-AI/react-fastapi-template"
 
 
 
@@ -30,7 +29,7 @@ homepage = "https://github.com/Komorebi-AI/react-template"
 packages = ["app"]
 
 [tool.setuptools_scm]
-# Backend lives in a subdirectory of the react-template repo; version comes
+# Backend lives in a subdirectory of the react-fastapi-template repo; version comes
 # from the repo root git metadata (applied by the template sync job)
 root = ".."
 # Importante crear esta sección vacia para activar el plugin
@@ -116,7 +115,7 @@ filterwarnings = ["error", "ignore::DeprecationWarning"]
 
 [tool.deptry]
 # colorlog is used in log_conf.yaml (not scanned by deptry); pyyaml is used
-# by uvicorn to load log_conf.yaml (TEMPORARY, see dependencies above)
+# by uvicorn to load log_conf.yaml
 per_rule_ignores = {"DEP002" = ["colorlog", "pyyaml"]}
 
 [tool.ty.terminal]
