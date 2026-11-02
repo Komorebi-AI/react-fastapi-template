@@ -25,6 +25,17 @@ jobs:
       - name: "Frontend served"
         run: curl -sf http://localhost:8080/ | grep -q "<title>React Template</title>"
 
+      # Locks in the fallback rule from frontend/docker/nginx.conf: a browser
+      # navigating to a client-side route gets the shell, a missing asset does
+      # not (a 200 there hides the 404 behind a parse error downstream).
+      - name: "SPA fallback: client routes get index.html, missing assets 404"
+        run: |
+          curl -sf -H 'Accept: text/html' http://localhost:8080/about \
+            | grep -q "<title>React Template</title>"
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/assets/missing.js)
+          echo "missing asset -> $code"
+          test "$code" = 404
+
       # One request is enough to prove the wiring: reaching /health under /api
       # means the image runs and nginx strips the prefix. The endpoints
       # themselves are the Contract workflow's job.
