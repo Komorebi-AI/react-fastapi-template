@@ -21,6 +21,11 @@ COPY . .
 ARG VITE_API_URL=
 ENV VITE_API_URL=$VITE_API_URL
 
+# Public path the app is served from. Leave empty for the domain root:
+#   docker build --build-arg VITE_BASE_PATH=/myapp/ .
+ARG VITE_BASE_PATH=
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
+
 RUN npm run build
 
 # ---------- Runtime stage ----------

@@ -15,7 +15,9 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
+        {/* BASE_URL comes from `base` in vite.config.ts: '/' by default, so
+            this is a no-op until the app is built for a sub-path. */}
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route element={<Layout />}>
               <Route index element={<HomePage />} />

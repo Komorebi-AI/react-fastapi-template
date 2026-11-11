@@ -33,6 +33,21 @@ API calls go through the small wrapper in `src/api/client.ts` and hit `/api/...`
   compose variant `docker/nginx.compose.conf`), or set `VITE_API_URL` at build
   time (see `.env.example`).
 
+### Deploying under a sub-path
+
+The app is served from the domain root by default. To put it behind a path
+prefix, build with `VITE_BASE_PATH` — one variable moves the asset URLs, the
+router's `basename` and the default API base together:
+
+```bash
+VITE_BASE_PATH=/myapp/ npm run build
+# or: docker build --build-arg VITE_BASE_PATH=/myapp/ .
+```
+
+The build then loads `/myapp/assets/...` and calls `/myapp/api/...`, so the
+proxy in front of it needs to serve the files and route that API prefix under
+`/myapp/`.
+
 The example endpoints live in `src/api/backend.ts` and match `backend/app/api.py`:
 
 - `GET /api/` → `{"app-api": "version ..."}` (status/version chip)
